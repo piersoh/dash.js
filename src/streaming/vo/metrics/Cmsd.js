@@ -28,26 +28,24 @@
  *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  */
+
 /**
  * @class
  * @ignore
  */
-class MetricsList {
+class Cmsd {
+    /**
+     * @description This Object holds reference to the current buffer state of the video element.
+     */
     constructor() {
-        this.TcpList = [];
-        this.HttpList = [];
-        this.RepSwitchList = [];
-        this.BufferLevel = [];
-        this.BufferState = [];
-        this.PlayList = [];
-        this.DroppedFrames = [];
-        this.SchedulingInfo = [];
-        this.DVRInfo = [];
-        this.ManifestUpdate = [];
-        this.RequestsQueue = null;
-        this.DVBErrors = [];
-        this.CMSD = [];
+        /**
+         * The Transport-info header
+         * @public
+         */
+        this.t = null;
+        this.info = null;
+        this._etp = 0;
     }
 }
 
-export default MetricsList;
+export default Cmsd;

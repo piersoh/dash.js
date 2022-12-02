@@ -43,6 +43,7 @@ import EventBus from '../../core/EventBus';
 import RequestsQueue from '../vo/metrics/RequestsQueue';
 import Events from '../../core/events/Events';
 import FactoryMaker from '../../core/FactoryMaker';
+import Cmsd from '../vo/metrics/Cmsd';
 
 function MetricsModel(config) {
 
@@ -194,9 +195,63 @@ function MetricsModel(config) {
             delete vo.interval;
             delete vo.trace;
         }
+        if (responseHeaders !== null) {
+            addCmsd(mediaType, responseHeaders, url);
+        }
 
         pushAndNotify(mediaType, MetricsConstants.HTTP_REQUEST, vo);
     }
+
+    function addCmsd(mediaType, responseHeaders, url) {
+        let vo = new Cmsd();
+
+        //let headerPairs = responseHeaders.trim().split('\u000d\u000a');
+        let headerPairs = responseHeaders.trim().split('\u000a');
+        //            console.log(url,"\nheaders:",responseHeaders," ilen:",headerPairs.length);
+        //            var out="";
+        //            for (let i = 0, ilen = responseHeaders.length; i < ilen; i++) {
+        //                out += responseHeaders[i] + '[' + responseHeaders[i].charCodeAt(0).toString(16) + ']';
+        //            }
+        //            console.log("headersHex:",out);
+        for (let i = 0, ilen = headerPairs.length; i < ilen; i++) {
+            let headerPair = headerPairs[i];
+            let index = headerPair.indexOf('\u003a\u0020');
+            //                console.log("headeri:",index," h:",headerPair.substring(0, index));
+            let hdrname = headerPair.substring(0, index).trim();
+            if (index > 0 && (
+                    hdrname.localeCompare('transport-info',undefined, { sensitivity: 'accent' }) === 0 ||
+                    hdrname.localeCompare('CMSD',undefined, { sensitivity: 'accent' }) === 0)) {
+                let th = headerPair.substring(index + 2).trim();
+                let params = [];
+                let start = true;
+                let p = [];
+                th.split(';').forEach(param => {
+                    p = param.trim().split('=');
+                    if (start) {
+                        params.senderID = p[0];
+                        start = false;
+                    } else if (p.length === 2) {
+                        params[p[0]] = p[1];
+                    }
+                });
+                let mss=1448; //default
+                if (params.mss) {
+                    mss=params.mss;
+                }
+                vo.t = new Date().toISOString();
+                vo.info = encodeURIComponent(th + '; url=' + url);
+                if (params.cwnd && params.rtt) {
+                    vo._etp = params.cwnd * mss * 8 / params.rtt; // Kbits/sec (rtt in ms)
+                } else if (params.etp) {
+                    vo._etp = params.etp;
+                }
+                //console.log('Received: CMSD/transport-info: now:' + Date.now() / 1000 + ' ts:' + Date.parse(params.ts) + ' ' + params.cwnd * mss * 8 / params.rtt + ' mediaType:' + mediaType + ' ;\nHeader:' + th);
+                console.log('Received: CMSD/transport-info: now:' + vo.t  + ' etp:' + vo._etp + ' mediaType:' + mediaType + ' ;\nHeader:' + th);
+                pushAndNotify(mediaType, MetricsConstants.CMSD, vo);
+            }
+        }
+    }
+
 
     function addRepresentationSwitch(mediaType, t, mt, to, lto) {
         let vo = new TrackSwitch();

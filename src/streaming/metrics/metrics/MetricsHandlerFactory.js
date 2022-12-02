@@ -50,7 +50,8 @@ function MetricsHandlerFactory(config) {
         HttpList:       HttpList,
         PlayList:       GenericMetricHandler,
         RepSwitchList:  GenericMetricHandler,
-        TcpList:        GenericMetricHandler
+        TcpList:        GenericMetricHandler,
+        CMSD:           GenericMetricHandler
     };
 
     function create(listType, reportingController) {
