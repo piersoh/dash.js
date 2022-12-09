@@ -596,7 +596,12 @@ function CmcdModel() {
         _resetInitialSettings();
     }
 
+    function getAbrController() {
+        return abrController;
+    }
+
     instance = {
+        getAbrController,
         getQueryParameter,
         getHeaderParameters,
         setConfig,

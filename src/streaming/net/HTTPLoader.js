@@ -123,7 +123,8 @@ function HTTPLoader(cfg) {
                 const responseHeaders = httpRequest.response && httpRequest.response.getAllResponseHeaders ? httpRequest.response.getAllResponseHeaders() :
                     httpRequest.response ? httpRequest.response.responseHeaders : [];
 
-                dashMetrics.addHttpRequest(request, responseUrl, responseStatus, responseHeaders, success ? traces : null);
+                dashMetrics.addHttpRequest(request, responseUrl, responseStatus, responseHeaders, success ? traces : null, cmcdModel.getAbrController()); 
+
 
                 if (request.type === HTTPRequest.MPD_TYPE) {
                     dashMetrics.addManifestUpdate(request);

@@ -135,7 +135,7 @@ function MetricsModel(config) {
         return vo;
     }
 
-    function addHttpRequest(mediaType, tcpid, type, url, quality, actualurl, serviceLocation, range, trequest, tresponse, tfinish, responsecode, mediaduration, responseHeaders, traces, fileLoaderType) {
+    function addHttpRequest(mediaType, tcpid, type, url, quality, actualurl, serviceLocation, range, trequest, tresponse, tfinish, responsecode, mediaduration, responseHeaders, traces, fileLoaderType, abr) {
         let vo = new HTTPRequest();
 
         // ISO 23009-1 D.4.3 NOTE 2:
@@ -196,14 +196,13 @@ function MetricsModel(config) {
             delete vo.trace;
         }
         if (responseHeaders !== null) {
-            addCmsd(mediaType, responseHeaders, url);
+            addCmsd(mediaType, responseHeaders, url, abr);
         }
 
         pushAndNotify(mediaType, MetricsConstants.HTTP_REQUEST, vo);
     }
 
-    function addCmsd(mediaType, responseHeaders, url) {
-        let vo = new Cmsd();
+    function addCmsd(mediaType, responseHeaders, url, abr) {
 
         //let headerPairs = responseHeaders.trim().split('\u000d\u000a');
         let headerPairs = responseHeaders.trim().split('\u000a');
@@ -219,12 +218,14 @@ function MetricsModel(config) {
             //                console.log("headeri:",index," h:",headerPair.substring(0, index));
             let hdrname = headerPair.substring(0, index).trim();
             if (index > 0 && (
-                    hdrname.localeCompare('transport-info',undefined, { sensitivity: 'accent' }) === 0 ||
-                    hdrname.localeCompare('CMSD',undefined, { sensitivity: 'accent' }) === 0)) {
+                hdrname.localeCompare('transport-info',undefined, { sensitivity: 'accent' }) === 0 ||
+                hdrname.localeCompare('CMSD',undefined, { sensitivity: 'accent' }) === 0)) {
                 let th = headerPair.substring(index + 2).trim();
                 let params = [];
                 let start = true;
                 let p = [];
+                let vo = new Cmsd();
+
                 th.split(';').forEach(param => {
                     p = param.trim().split('=');
                     if (start) {
@@ -238,8 +239,10 @@ function MetricsModel(config) {
                 if (params.mss) {
                     mss=params.mss;
                 }
-                vo.t = new Date().toISOString();
-                vo.info = encodeURIComponent(th + '; url=' + url);
+                vo.t = new Date();
+                let ave_tput = abr.getThroughputHistory().getAverageThroughput(mediaType);
+                let safe_tput = abr.getThroughputHistory().getSafeAverageThroughput(mediaType);
+                vo.info = th + '; url=' + url + '; ave_tput=' + ave_tput + '; safe_tput=' + safe_tput;
                 if (params.cwnd && params.rtt) {
                     vo._etp = params.cwnd * mss * 8 / params.rtt; // Kbits/sec (rtt in ms)
                 } else if (params.etp) {
