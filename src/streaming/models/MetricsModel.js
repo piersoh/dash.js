@@ -202,7 +202,7 @@ function MetricsModel(config) {
         pushAndNotify(mediaType, MetricsConstants.HTTP_REQUEST, vo);
     }
 
-    function addCmsd(mediaType, responseHeaders, url, abr) {
+    function addCmsd(mediaType, responseHeaders, url, abr, traces) {
 
         //let headerPairs = responseHeaders.trim().split('\u000d\u000a');
         let headerPairs = responseHeaders.trim().split('\u000a');
@@ -242,7 +242,10 @@ function MetricsModel(config) {
                 vo.t = new Date();
                 let ave_tput = abr.getThroughputHistory().getAverageThroughput(mediaType);
                 let safe_tput = abr.getThroughputHistory().getSafeAverageThroughput(mediaType);
-                vo.info = th + '; url=' + url + '; ave_tput=' + ave_tput + '; safe_tput=' + safe_tput;
+                let bufferlevels = getMetricsFor(mediaType).BufferLevel;
+                let buffer = bufferlevels[bufferlevels.length-1] || {'t': vo.t, 'level':'NaN'};
+                vo.info = th + '; url=' + url + '; ave_tput=' + ave_tput +
+                    '; safe_tput=' + safe_tput + '; buffer=' + buffer.level + '; buffer_t=' + buffer.t;
                 if (params.cwnd && params.rtt) {
                     vo._etp = params.cwnd * mss * 8 / params.rtt; // Kbits/sec (rtt in ms)
                 } else if (params.etp) {
