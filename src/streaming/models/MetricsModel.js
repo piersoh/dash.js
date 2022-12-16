@@ -196,7 +196,7 @@ function MetricsModel(config) {
             delete vo.trace;
         }
         if (responseHeaders !== null) {
-            addCmsd(mediaType, responseHeaders, url, abr);
+            addCmsd(mediaType, responseHeaders, url, abr, traces);
         }
 
         pushAndNotify(mediaType, MetricsConstants.HTTP_REQUEST, vo);
@@ -244,8 +244,10 @@ function MetricsModel(config) {
                 let safe_tput = abr.getThroughputHistory().getSafeAverageThroughput(mediaType);
                 let bufferlevels = getMetricsFor(mediaType).BufferLevel;
                 let buffer = bufferlevels[bufferlevels.length-1] || {'t': vo.t, 'level':'NaN'};
+                let trace = traces[0] || {'s': vo.t, 'b':'NaN', 'd':'NaN'};
                 vo.info = th + '; url=' + url + '; ave_tput=' + ave_tput +
-                    '; safe_tput=' + safe_tput + '; buffer=' + buffer.level + '; buffer_t=' + buffer.t;
+                    '; safe_tput=' + safe_tput + '; buffer=' + buffer.level + '; buffer_t=' + buffer.t +
+                    '; traces.s=' + trace.s + '; trace.d=' + trace.d + '; trace.b=' + trace.b[0];
                 if (params.cwnd && params.rtt) {
                     vo._etp = params.cwnd * mss * 8 / params.rtt; // Kbits/sec (rtt in ms)
                 } else if (params.etp) {
