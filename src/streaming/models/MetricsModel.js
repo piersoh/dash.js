@@ -245,9 +245,9 @@ function MetricsModel(config) {
                 let bufferlevels = getMetricsFor(mediaType).BufferLevel;
                 let buffer = bufferlevels[bufferlevels.length-1] || {'t': vo.t, 'level':'NaN'};
                 let trace = traces[0] || {'s': vo.t, 'b':'NaN', 'd':'NaN'};
-                vo.info = th + '; url=' + url + '; ave_tput=' + ave_tput +
-                    '; safe_tput=' + safe_tput + '; buffer=' + buffer.level + '; buffer_t=' + buffer.t +
-                    '; traces.s=' + trace.s + '; trace.d=' + trace.d + '; trace.b=' + trace.b[0];
+                vo.info = th + '; url=' + url + '; ave_tput=' + ave_tput.toFixed(3) +
+                    '; safe_tput=' + safe_tput.toFixed(3) + '; buffer=' + buffer.level.toFixed(3) + '; buffer_t=' + buffer.t.toISOString() +
+                    '; traces.s=' + trace.s.toISOString() + '; trace.d=' + trace.d.toFixed(3) + '; trace.b=' + trace.b[0];
                 if (params.cwnd && params.rtt) {
                     vo._etp = params.cwnd * mss * 8 / params.rtt; // Kbits/sec (rtt in ms)
                 } else if (params.etp) {
