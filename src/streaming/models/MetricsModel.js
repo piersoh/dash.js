@@ -240,8 +240,8 @@ function MetricsModel(config) {
                     mss=params.mss;
                 }
                 vo.t = new Date();
-                let ave_tput = abr.getThroughputHistory().getAverageThroughput(mediaType);
-                let safe_tput = abr.getThroughputHistory().getSafeAverageThroughput(mediaType);
+                let ave_tput = abr.getThroughputHistory().getAverageThroughput(mediaType,true);
+                let safe_tput = abr.getThroughputHistory().getSafeAverageThroughput(mediaType,true);
                 let bufferlevels = getMetricsFor(mediaType).BufferLevel;
                 let buffer = bufferlevels[bufferlevels.length-1] || {'t': vo.t, 'level':NaN};
                 let trace = traces[0] || {'s': vo.t, 'b':NaN, 'd':NaN};
