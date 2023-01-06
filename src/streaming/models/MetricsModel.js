@@ -221,7 +221,7 @@ function MetricsModel(config) {
                 hdrname.localeCompare('transport-info',undefined, { sensitivity: 'accent' }) === 0 ||
                 hdrname.localeCompare('CMSD',undefined, { sensitivity: 'accent' }) === 0)) {
                 let th = headerPair.substring(index + 2).trim();
-                let params = [];
+                let cmsd = [];
                 let start = true;
                 let p = [];
                 let vo = new Cmsd();
@@ -229,33 +229,42 @@ function MetricsModel(config) {
                 th.split(';').forEach(param => {
                     p = param.trim().split('=');
                     if (start) {
-                        params.senderID = p[0];
+                        cmsd.senderID = p[0];
                         start = false;
                     } else if (p.length === 2) {
-                        params[p[0]] = p[1];
+                        cmsd[p[0]] = p[1];
                     }
                 });
                 let mss=1448; //default
-                if (params.mss) {
-                    mss=params.mss;
+                if (cmsd.mss) {
+                    mss=cmsd.mss;
                 }
                 vo.t = new Date();
-                let ave_tput = abr.getThroughputHistory().getAverageThroughput(mediaType,true);
+                let ave_tput = abr.getThroughputHistory().getAverageThroughput(mediaType,-1);
+                let ave_wide_tput = abr.getThroughputHistory().getAverageThroughput(mediaType,true);
                 let safe_tput = abr.getThroughputHistory().getSafeAverageThroughput(mediaType,true);
                 let bufferlevels = getMetricsFor(mediaType).BufferLevel;
                 let buffer = bufferlevels[bufferlevels.length-1] || {'t': vo.t, 'level':NaN};
                 let trace = traces[0] || {'s': vo.t, 'b':NaN, 'd':NaN};
                 vo.info = th + '; url=' + url + '; ave_tput=' + ave_tput.toFixed(3) +
-                    '; safe_tput=' + safe_tput.toFixed(3) + '; buffer=' + buffer.level.toFixed(3) + '; buffer_t=' + buffer.t.toISOString() +
-                    '; traces.s=' + trace.s.toISOString() + '; trace.d=' + trace.d.toFixed(3) + '; trace.b=' + trace.b[0];
-                if (params.cwnd && params.rtt) {
-                    vo._etp = params.cwnd * mss * 8 / params.rtt; // Kbits/sec (rtt in ms)
-                } else if (params.etp) {
-                    vo._etp = params.etp;
+                    '; ave_wide_tput=' + ave_wide_tput.toFixed(3) +
+                    '; safe_tput=' + safe_tput.toFixed(3) +
+                    '; buffer=' + buffer.level.toFixed(3) + '; buffer_t=' + buffer.t.toISOString() +
+                    '; traces.s=' + trace.s.toISOString() + '; trace.d=' + trace.d.toFixed(3) +
+                    '; trace.b=' + trace.b[0];
+                if (cmsd.rtt) {
+                    http_vo._rtt = cmsd.rtt; // rtt in ms
+                    if (cmsd.cwnd) {
+                        http_vo._etp = cmsd.cwnd * mss * 8 / cmsd.rtt; // Kbits/sec (rtt in ms)
+                    }
                 }
-                //console.log('Received: CMSD/transport-info: now:' + Date.now() / 1000 + ' ts:' + Date.parse(params.ts) + ' ' + params.cwnd * mss * 8 / params.rtt + ' mediaType:' + mediaType + ' ;\nHeader:' + th);
+                if (cmsd.etp) {
+                    http_vo._etp = cmsd.etp;
+                }
+                //console.log('Received: CMSD/transport-info: now:' + Date.now() / 1000 + ' ts:' + Date.parse(cmsd.ts) + ' ' + cmsd.cwnd * mss * 8 / cmsd.rtt + ' mediaType:' + mediaType + ' ;\nHeader:' + th);
                 console.log('Received: CMSD/transport-info: now:' + vo.t  + ' etp:' + vo._etp + ' mediaType:' + mediaType + ' ;\nHeader:' + th);
                 pushAndNotify(mediaType, MetricsConstants.CMSD, vo);
+                return cmsd;
             }
         }
     }
