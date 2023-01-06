@@ -195,14 +195,14 @@ function MetricsModel(config) {
             delete vo.interval;
             delete vo.trace;
         }
-        if (responseHeaders !== null) {
-            addCmsd(mediaType, responseHeaders, url, abr, traces);
+        if (typeof responseHeaders === 'string') {
+            addCmsd(mediaType, responseHeaders, url, abr, traces, vo);
         }
 
         pushAndNotify(mediaType, MetricsConstants.HTTP_REQUEST, vo);
     }
 
-    function addCmsd(mediaType, responseHeaders, url, abr, traces) {
+    function addCmsd(mediaType, responseHeaders, url, abr, traces, http_vo) {
 
         //let headerPairs = responseHeaders.trim().split('\u000d\u000a');
         let headerPairs = responseHeaders.trim().split('\u000a');
@@ -237,7 +237,7 @@ function MetricsModel(config) {
                 });
                 let mss=1448; //default
                 if (cmsd.mss) {
-                    mss=cmsd.mss;
+                    mss=parseInt(cmsd.mss);
                 }
                 vo.t = new Date();
                 let ave_tput = abr.getThroughputHistory().getAverageThroughput(mediaType,-1);
@@ -253,13 +253,14 @@ function MetricsModel(config) {
                     '; traces.s=' + trace.s.toISOString() + '; trace.d=' + trace.d.toFixed(3) +
                     '; trace.b=' + trace.b[0];
                 if (cmsd.rtt) {
-                    http_vo._rtt = cmsd.rtt; // rtt in ms
+                    http_vo._rtt = parseFloat(cmsd.rtt); // rtt in ms
                     if (cmsd.cwnd) {
+                        // String to float done by implicit type conversion
                         http_vo._etp = cmsd.cwnd * mss * 8 / cmsd.rtt; // Kbits/sec (rtt in ms)
                     }
                 }
                 if (cmsd.etp) {
-                    http_vo._etp = cmsd.etp;
+                    http_vo._etp = parseFloat(cmsd.etp);
                 }
                 //console.log('Received: CMSD/transport-info: now:' + Date.now() / 1000 + ' ts:' + Date.parse(cmsd.ts) + ' ' + cmsd.cwnd * mss * 8 / cmsd.rtt + ' mediaType:' + mediaType + ' ;\nHeader:' + th);
                 console.log('Received: CMSD/transport-info: now:' + vo.t  + ' etp:' + vo._etp + ' mediaType:' + mediaType + ' ;\nHeader:' + th);
