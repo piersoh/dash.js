@@ -245,7 +245,7 @@ function MetricsModel(config) {
                 let safe_tput = abr.getThroughputHistory().getSafeAverageThroughput(mediaType,true);
                 let bufferlevels = getMetricsFor(mediaType).BufferLevel;
                 let buffer = bufferlevels[bufferlevels.length-1] || {'t': vo.t, 'level':NaN};
-                let trace = traces[0] || {'s': vo.t, 'b':NaN, 'd':NaN};
+                let trace = (traces || {'s': vo.t, 'b':NaN, 'd':NaN})[0];
                 vo.info = th + '; url=' + url + '; ave_tput=' + ave_tput.toFixed(3) +
                     '; ave_wide_tput=' + ave_wide_tput.toFixed(3) +
                     '; safe_tput=' + safe_tput.toFixed(3) +
@@ -259,11 +259,11 @@ function MetricsModel(config) {
                         http_vo._etp = cmsd.cwnd * mss * 8 / cmsd.rtt; // Kbits/sec (rtt in ms)
                     }
                 }
+                //console.log('Received: CMSD/transport-info: now:' + Date.now() / 1000 + ' ts:' + Date.parse(cmsd.ts) + ' ' + cmsd.cwnd * mss * 8 / cmsd.rtt + ' mediaType:' + mediaType + ' ;\nHeader:' + th);
+                console.log('Received: CMSD/transport-info: now:' + vo.t  + ', CMSD Cwnd based etp:' + http_vo._etp.toFixed(3) + 'Kbps, mediaType:' + mediaType + '\nHeader: ' + th + '\nDB Report: ' + vo.info);
                 if (cmsd.etp) {
                     http_vo._etp = parseFloat(cmsd.etp);
                 }
-                //console.log('Received: CMSD/transport-info: now:' + Date.now() / 1000 + ' ts:' + Date.parse(cmsd.ts) + ' ' + cmsd.cwnd * mss * 8 / cmsd.rtt + ' mediaType:' + mediaType + ' ;\nHeader:' + th);
-                console.log('Received: CMSD/transport-info: now:' + vo.t  + ' etp:' + vo._etp + ' mediaType:' + mediaType + ' ;\nHeader:' + th);
                 pushAndNotify(mediaType, MetricsConstants.CMSD, vo);
                 return cmsd;
             }
