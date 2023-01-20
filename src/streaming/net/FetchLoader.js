@@ -314,6 +314,7 @@ function FetchLoader(cfg) {
                                     data = remaining;
                                     remaining = new Uint8Array();
                                 } else {
+                                    console.log('Remaining after MOOF_end:',remaining.length-end);
                                     data = new Uint8Array(remaining.subarray(0, end));
                                     remaining = remaining.subarray(end);
                                 }
