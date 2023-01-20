@@ -406,8 +406,11 @@ function L2ARule(config) {
                     l2AParameter.w[i] = l2AParameter.prev_w[i] + sign * (V / (2 * alpha)) * ((l2AParameter.Q + vl) * (currentPlaybackRate * bitrates[i] / lastthroughput));//Lagrangian descent
                 }
 
+                console.log('downloadBytes:',downloadBytes,'throughputMeasureTime:', throughputMeasureTime, 'url:', dashMetrics.getCurrentHttpRequest(mediaType).url, 'lastthroughput:', lastthroughput, 'V:', V, 'w:', l2AParameter.w, 'sign:', sign,'alpha:', alpha,'Q:', l2AParameter.Q, 'vl:', vl,'playbackrate:', currentPlaybackRate);
+                //
                 // Apply euclidean projection on w to ensure w expresses a probability distribution
                 l2AParameter.w = euclideanProjection(l2AParameter.w);
+
 
                 for (let i = 0; i < bitrateCount; ++i) {
                     diff1[i] = l2AParameter.w[i] - l2AParameter.prev_w[i];
