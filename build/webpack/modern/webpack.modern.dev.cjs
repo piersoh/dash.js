@@ -1,5 +1,6 @@
 const { merge } = require('webpack-merge');
 const { umdConfig } = require('./webpack.modern.base.cjs');
+const { umdConfig: legacyUmdConfig } = require('../legacy/webpack.legacy.base.cjs');
 const { devEntries } = require('../common/webpack.common.base.cjs');
 const path = require('path');
 
@@ -23,4 +24,12 @@ const umdDevConfig = merge(umdConfig, {
     }
 });
 
-module.exports = [umdDevConfig];
+const legacyUmdDevConfig = merge(legacyUmdConfig, {
+    mode: 'development',
+    entry: devEntries,
+    output: {
+        filename: '[name].debug.js',
+    }
+});
+
+module.exports = [umdDevConfig, legacyUmdDevConfig];
